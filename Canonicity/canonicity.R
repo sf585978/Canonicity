@@ -53,10 +53,10 @@ canonDTM.2 <- removeSparseTerms(canonDTM, 0.1) # remove sparse terms
 
 ##### Non-Canon Document Term Matrix #####
 
-noncanonDTM <- DocumentTermMatrix(canon) # create a document term matrix
+noncanonDTM <- DocumentTermMatrix(noncanon) # create a document term matrix
 freq.2 <- colSums(as.matrix(canonDTM)) # word frequencies
 ord.2 <- order(freq) # ordered least to greatest
-noncanonDTM.2 <- removeSparseTerms(canonDTM, 0.1) # remove sparse terms
+noncanonDTM.2 <- removeSparseTerms(noncanonDTM, 0.1) # remove sparse terms
 
 ##### Quantitative Analysis Preparation #####
 
@@ -73,17 +73,20 @@ noncanonWords <- noncanonDTM.2 %>%
 ##### Word Length #####
 
 data.frame(nletters.1 = nchar(canonWords)) %>%
-  ggplot(aes(x = nletters)) +
+  ggplot(aes(x = nletters.1)) +
   geom_histogram(binwidth = 1) +
   geom_vline(xintercept = mean(nchar(canonWords)), colour = "green", size = 1,
              alpha = .5) +
   labs(x = "Number of Letters", y = "Number of Words")
 
 data.frame(nletters.2 = nchar(noncanonWords)) %>%
-  ggplot(aes(x = nletters)) +
+  ggplot(aes(x = nletters.2)) +
   geom_histogram(binwidth = 1) +
   geom_vline(xintercept = mean(nchar(noncanonWords)), colour = "green", size = 1,
              alpha = .5) +
   labs(x = "Number of Letters", y = "Number of Words")
 
+shapiro.test(nchar(canonWords))
+shapiro.test(nchar(noncanonWords))
 
+wilcox.test(x = nchar(canonWords), y = nchar(noncanonWords))
