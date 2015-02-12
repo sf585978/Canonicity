@@ -90,3 +90,19 @@ shapiro.test(nchar(canonWords))
 shapiro.test(nchar(noncanonWords))
 
 wilcox.test(x = nchar(canonWords), y = nchar(noncanonWords))
+
+##### Word Length of Individual Texts #####
+
+canon.data <- read.csv("Canon Corpus - Sheet1.csv")
+
+for (i in 1:length(canon.data$file)) {
+  text <- scan(as.character(canon.data$file[i]), what = "character", sep = "\n")
+  text.lower <- tolower(text)
+  text.words <- strsplit(text.lower, "\\W")
+  text.words <- unlist(text.words)
+  str(text.words)
+  not.blanks <- which(text.words != "")
+  text.words <- text.words[not.blanks]
+  
+  canon.data$word.length.mean[i] <- mean(nchar(text.words))
+}
