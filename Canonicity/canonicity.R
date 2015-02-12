@@ -93,16 +93,31 @@ wilcox.test(x = nchar(canonWords), y = nchar(noncanonWords))
 
 ##### Word Length of Individual Texts #####
 
-canon.data <- read.csv("Canon Corpus - Sheet1.csv")
+canon.data <- read.csv("canon_corpus_by_year.csv")
 
-for (i in 1:length(canon.data$file)) {
-  text <- scan(as.character(canon.data$file[i]), what = "character", sep = "\n")
-  text.lower <- tolower(text)
-  text.words <- strsplit(text.lower, "\\W")
-  text.words <- unlist(text.words)
-  str(text.words)
-  not.blanks <- which(text.words != "")
-  text.words <- text.words[not.blanks]
+for (i in 1:length(canon.data$path)) {
+  year <- Corpus(DirSource(as.character(canon.data$path[i])))
   
-  canon.data$word.length.mean[i] <- mean(nchar(text.words))
+  toSpace <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+  
+  year <- tm_map(year, toSpace, "/|@|\\|")
+  year <- tm_map(year, content_transformer(tolower)) # set to lowercase
+  year <- tm_map(year, removeNumbers) # remove numbers
+  year <- tm_map(year, removePunctuation) # remove punctuation
+  year <- tm_map(year, removeWords, stopwords("English")) 
+  year <- tm_map(year, stripWhitespace) # remove whitespace
+  year <- tm_map(year, stemDocument) # remove common endings
+  
+  yearDTM <- DocumentTermMatrix(year) # create a document term matrix
+  freq.1 <- colSums(as.matrix(yearDTM)) # word frequencies
+  ord.1 <- order(freq) # ordered least to greatest
+  yearDTM.2 <- removeSparseTerms(yearDTM, 0.1) # remove sparse terms
+  
+  year.words <- yearDTM.2 %>%
+    as.matrix %>%
+    colnames %>%
+    (function(x) x[nchar(x) <20])
+  
+  canon.data$word.length.mean[i] <- mean(nchar(year.words))
 }
+
